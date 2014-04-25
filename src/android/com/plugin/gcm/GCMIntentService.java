@@ -115,6 +115,12 @@ public class GCMIntentService extends GCMBaseIntentService {
 			mBuilder.setNumber(Integer.parseInt(msgcnt));
 		}
 		
+		// turn on the ligths
+	        String ledLight = extras.getString("led");
+	        if(ledLight != null) {
+	            mBuilder.setLights(Color.argb(0, 245, 252, 52), 5000, 5000)
+	        }
+		
 		mNotificationManager.notify((String) appName, NOTIFICATION_ID, mBuilder.build());
 	}
 	
