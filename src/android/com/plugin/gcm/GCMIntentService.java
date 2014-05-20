@@ -1,22 +1,20 @@
 package com.plugin.gcm;
 
-import java.util.List;
-
-import com.google.android.gcm.GCMBaseIntentService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningTaskInfo;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+
+import com.google.android.gcm.GCMBaseIntentService;
 
 @SuppressLint("NewApi")
 public class GCMIntentService extends GCMBaseIntentService {
@@ -96,12 +94,19 @@ public class GCMIntentService extends GCMBaseIntentService {
 		
 		NotificationCompat.Builder mBuilder =
 			new NotificationCompat.Builder(context)
-				.setDefaults(Notification.DEFAULT_ALL)
 				.setSmallIcon(context.getApplicationInfo().icon)
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle(extras.getString("title"))
 				.setTicker(extras.getString("title"))
 				.setContentIntent(contentIntent);
+
+		// Support silent notifications
+		boolean silent = Boolean.parseBoolean(extras.getString("silent", "false"));
+		if (silent) {
+      mBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
+		} else {
+      mBuilder.setDefaults(Notification.DEFAULT_ALL);
+		}
 
 		String message = extras.getString("message");
 		if (message != null) {
@@ -118,7 +123,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 		// turn on the ligths
 	        String ledLight = extras.getString("led");
 	        if(ledLight != null) {
-	            mBuilder.setLights(Color.argb(0, 245, 252, 52), 5000, 5000)
+	            mBuilder.setLights(Color.argb(0, 245, 252, 52), 5000, 5000);
 	        }
 		
 		mNotificationManager.notify((String) appName, NOTIFICATION_ID, mBuilder.build());
