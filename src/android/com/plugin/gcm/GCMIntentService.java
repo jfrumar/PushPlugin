@@ -9,7 +9,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -19,7 +18,6 @@ import com.google.android.gcm.GCMBaseIntentService;
 @SuppressLint("NewApi")
 public class GCMIntentService extends GCMBaseIntentService {
 
-	public static final int NOTIFICATION_ID = 237;
 	private static final String TAG = "GCMIntentService";
 	
 	public GCMIntentService() {
@@ -92,21 +90,23 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		
+		int defaults = Notification.DEFAULT_ALL;
+
+		if (extras.getString("defaults") != null) {
+			try {
+				defaults = Integer.parseInt(extras.getString("defaults"));
+			} catch (NumberFormatException e) {}
+		}
+		
 		NotificationCompat.Builder mBuilder =
 			new NotificationCompat.Builder(context)
+				.setDefaults(defaults)
 				.setSmallIcon(context.getApplicationInfo().icon)
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle(extras.getString("title"))
 				.setTicker(extras.getString("title"))
-				.setContentIntent(contentIntent);
-
-		// Support silent notifications
-		boolean silent = Boolean.parseBoolean(extras.getString("silent", "false"));
-		if (silent) {
-      mBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
-		} else {
-      mBuilder.setDefaults(Notification.DEFAULT_ALL);
-		}
+				.setContentIntent(contentIntent)
+				.setAutoCancel(true);
 
 		String message = extras.getString("message");
 		if (message != null) {
@@ -120,19 +120,19 @@ public class GCMIntentService extends GCMBaseIntentService {
 			mBuilder.setNumber(Integer.parseInt(msgcnt));
 		}
 		
-		// turn on the ligths
-	        String ledLight = extras.getString("led");
-	        if(ledLight != null) {
-	            mBuilder.setLights(Color.argb(0, 245, 252, 52), 5000, 5000);
-	        }
+		int notId = 0;
 		
-		mNotificationManager.notify((String) appName, NOTIFICATION_ID, mBuilder.build());
-	}
-	
-	public static void cancelNotification(Context context)
-	{
-		NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotificationManager.cancel((String)getAppName(context), NOTIFICATION_ID);	
+		try {
+			notId = Integer.parseInt(extras.getString("notId"));
+		}
+		catch(NumberFormatException e) {
+			Log.e(TAG, "Number format exception - Error parsing Notification ID: " + e.getMessage());
+		}
+		catch(Exception e) {
+			Log.e(TAG, "Number format exception - Error parsing Notification ID" + e.getMessage());
+		}
+		
+		mNotificationManager.notify((String) appName, notId, mBuilder.build());
 	}
 	
 	private static String getAppName(Context context)
