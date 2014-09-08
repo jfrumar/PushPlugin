@@ -108,6 +108,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 				.setContentIntent(contentIntent)
 				.setAutoCancel(true);
 
+		// Support silent notifications
+		boolean silent = Boolean.parseBoolean(extras.getString("silent", "false"));
+		if (silent) {
+			mBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
+		} else {
+			mBuilder.setDefaults(Notification.DEFAULT_ALL);
+		}
+
 		String message = extras.getString("message");
 		if (message != null) {
 			mBuilder.setContentText(message);
